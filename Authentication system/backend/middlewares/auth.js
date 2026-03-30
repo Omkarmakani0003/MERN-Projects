@@ -5,10 +5,10 @@ const {asyncHandler} = require('../utils/asyncHandler')
 const apiError = require('../utils/apiError')
 
 exports.auth = asyncHandler(async(req,res,next)=>{
-   const token = req.header('Authorization')?.replace('Bearer ','')
+   const token = req.cookies.token || req.header('Authorization')?.replace('Bearer ','')
 
    if(!token) throw new apiError(500,'Unauthorize')
-    console.log(token)
+
    const decoded = await jwt.verify(token,process.env.JWT_SECRETE)
    
    const User = await user.findById(decoded._id).select('-password')

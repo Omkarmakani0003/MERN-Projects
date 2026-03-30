@@ -1,20 +1,32 @@
 import { useState } from 'react'
 import './App.css'
+
+import { BrowserRouter, Routes, Route,Navigate } from 'react-router-dom'
+import { AuthProvider } from './contaxt/auth/authContext'
+import ProtectedRoute from './components/ProtectedRoute'
+
 import Signup from '../pages/Signup'
 import Login from '../pages/Login'
-import Dashboard from '../pages/dashboard'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Dashboard from '../pages/Dashboard'
 
 function App() {
   
   return (
-    <BrowserRouter>
-       <Routes>
-          <Route path="/signup" element={<Signup />}/>
-          <Route path="/login" element={<Login />}/>
-          <Route path="/dashboard" element={<Dashboard />}/>
-       </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+
+        <Routes>
+            <Route path="/signup" element={<Signup />}/>
+            <Route path="/login" element={<Login />}/>
+            <Route path="/dashboard" element={
+                      <ProtectedRoute> 
+                        < Dashboard /> 
+                      </ProtectedRoute>
+                    }/>
+        </Routes>
+
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 

@@ -43,7 +43,10 @@ exports.login = asyncHandler(async(req,res) => {
     const token = await User.generateToken()
     const loggedIn = await user.findById(User._id).select('-password')
 
-    // res.cookie('token', token)
+    res.cookie('token', token, {
+        httpOnly: true,
+        secure: false
+    })
 
     return res.status(200).json(new apiResponse(200,'User login successfully',{user: loggedIn,token: token}))
 
