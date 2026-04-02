@@ -1,5 +1,8 @@
 const {user} = require('../models/user.model')
 const {follow} = require('../models/follow.model')
+const {post} = require('../models/posts.model')
+const {save} = require('../models/save.model')
+const mongoose = require('mongoose')
 const asyncHandler = require('../utils/handlers/asyncHandler')
 const apiError = require('../utils/handlers/apiError')
 const apiResponse = require('../utils/handlers/apiResponse')
@@ -38,7 +41,7 @@ exports.getSuggestedUsers = asyncHandler(async(req,res)=>{
                 $nin: [...followingUsersIds,req.user._id]
             }
         }
-    ).select('-email -bio -cover_image -phone -date_of_birth -gender -followes -following -post_count -joining_date -is_online -createdAt -updatedAt')
+    ).select('-email -bio -cover_image -phone -date_of_birth -gender -followes -following -post_count -joining_date -is_online -createdAt -updatedAt').limit(5)
 
     return res.status(200).json(new apiResponse(200,'Suggested users fetch successfully',suggestedUsers))
 
@@ -115,4 +118,105 @@ exports.updateProfile = asyncHandler(async(req,res)=>{
 
     return res.status(200).json(new apiResponse(200,'Profile updated successfully',profile))
     
+})
+
+exports.getSpecificUsersPost = asyncHandler(async(req,res)=>{
+
+      const {user_id} = req.body
+      if(!user_id) throw new apiError(400,"user_ID is must required")
+
+      const options = {page : parseInt(req.query?.page) || 1, limit: 9}
+
+      const posts = await post.aggregatePaginate(post.aggregate({$match:{user_id: user_id}}),options)  
+      
+      return res.status(200).json(new apiResponse(200,"post fetched successfully",posts))
+
+})
+
+exports.getUserSave = asyncHandler(async(req,res)=>{
+
+      const user_id = req.user._id
+
+      if(!user_id) throw new apiError(400,"user_ID is must required")
+
+      const options = {page : parseInt(req.query?.page) || 1, limit: 9}
+      
+      const Save = await save.paginate({user_id: user_id},options)  
+      
+      return res.status(200).json(new apiResponse(200,"save fetched successfully",Save))
+
+})
+
+exports.getfollowers = asyncHandler(async(req,res)=>{
+
+      const {user_id} = req.body
+
+      if(!user_id) throw new apiError(400,"user_id is must required")
+
+      const options = {page : parseInt(req.query?.page) || 1, limit: 10}
+      
+      const followes = await follow.aggregatePaginate(
+        follow.aggregate([
+            {$match: {following_id: new mongoose.Types.ObjectId(user_id) }},
+            {
+                $lookup:{
+                    from:'users',
+                    localField: 'follower_id',
+                    foreignField: '_id',
+                    as: 'followers'
+                }
+            },
+            {
+                $unwind:{
+                    path:'$followers'
+                }
+            },
+            {
+                $project:{
+                    'followers': 1
+                }
+            }
+        ]),
+        options
+      )  
+      
+      return res.status(200).json(new apiResponse(200,"save fetched successfully",followes))
+
+})
+
+exports.getfollowings = asyncHandler(async(req,res)=>{
+
+      const {user_id} = req.body
+
+      if(!user_id) throw new apiError(400,"user_id is must required")
+
+      const options = {page : parseInt(req.query?.page) || 1, limit: 10}
+      
+      const followings = await follow.aggregatePaginate(
+        follow.aggregate([
+            {$match: {follower_id: new mongoose.Types.ObjectId(user_id) }},
+            {
+                $lookup:{
+                    from:'users',
+                    localField: 'following_id',
+                    foreignField: '_id',
+                    as: 'followings'
+                }
+            },
+            {
+                $unwind:{
+                    path:'$followings'
+                }
+            },
+            {
+                $project:{
+                    'followings': 1
+                }
+            }
+        ]),
+        options
+      )  
+      
+      return res.status(200).json(new apiResponse(200,"save fetched successfully",followings))
+
 })

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const paginate = require('mongoose-paginate-v2')
 
 const saveSchema = new mongoose.Schema({
 
@@ -17,5 +18,5 @@ const saveSchema = new mongoose.Schema({
   timestamps: true 
 }
 )
-
+saveSchema.plugin(paginate)
 module.exports.save = mongoose.model('saves',saveSchema)

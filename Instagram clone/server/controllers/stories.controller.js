@@ -4,6 +4,7 @@ const apiResponse = require('../utils/handlers/apiResponse')
 const { follow } = require('../models/follow.model')
 const { stories } = require('../models/stories.model')
 const {resizeUploads} = require('../middlewares/resizeUploads')
+const fs = require('fs')
 const path = require('path')
 
 
@@ -101,5 +102,50 @@ exports.storyList = asyncHandler(async(req,res)=>{
     ])
 
     return res.status(200).json(new apiResponse(200,'stories list fetch successfully',getStory))
+
+})
+
+exports.deleteStory = asyncHandler(async(req,res)=>{
+
+    /** Get input */
+    const {stories_id,story_id} = req.body
+
+    /** Input validation */
+    if(!stories_id || !story_id) throw new apiError(400,"Story_id and stories_id are required")
+
+    /* Check post in exist or not */
+    const isStoryExist = await stories.findById(stories_id)
+    if(!isStoryExist) throw new apiError(404,"Story not found")
+
+    /* Check authorization */  
+    if(isStoryExist.user_id.toString() !== req.user._id.toString()){
+        throw new apiError(400,"You can not delete this Story")
+    }
+ 
+
+    const getStory = isStoryExist.stories.filter((e)=> e.id.toString() == story_id.toString())
+ 
+    if(!getStory || getStory.length == 0) throw new apiError(404,"Story not found")
+
+    /* remove */
+    await fs.unlink(getStory[0].story_url,(err)=>{
+            if(err){
+                console.log(err)
+                throw new apiError(400,"Something went wrong file not remove from folder")
+            }
+            console.log('file removed successfully')
+        })
+
+    if(isStoryExist.stories.length > 1){
+        const oldStories = isStoryExist.stories.filter((e)=> e.id.toString() !== story_id.toString())
+        await stories.findByIdAndUpdate(
+            {_id: stories_id, user_id: req.user._id},
+            { stories : oldStories }
+        )
+    }else{
+        await stories.deleteOne({_id: stories_id, user_id: req.user._id})
+    } 
+
+    return res.status(200).json(new apiResponse(200,"Story deleted successfully"))
 
 })

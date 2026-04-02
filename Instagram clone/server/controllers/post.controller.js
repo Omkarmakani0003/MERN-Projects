@@ -8,6 +8,7 @@ const {save} = require('../models/save.model')
 const {comments} = require('../models/comments.model')
 const {resizeUploads} = require('../middlewares/resizeUploads')
 const path = require('path')
+const fs  = require('fs')
 
 exports.uploadPost = asyncHandler(async(req,res)=>{
 
@@ -51,40 +52,45 @@ exports.uploadPost = asyncHandler(async(req,res)=>{
 
 exports.postList = asyncHandler(async(req,res)=>{
     
-    const getPost = await follow.aggregate([
+    const options = {page : parseInt(req.query?.page) || 1, limit: 10}
 
-        {$match:{'follower_id':{$eq:req.user._id}}},
+    const getPost = await follow.aggregatePaginate(
+                follow.aggregate([
 
-        {
-            $lookup:{
-                'from': 'posts',
-                'localField': 'following_id',
-                'foreignField': 'user_id',
-                as:'post',
-                pipeline : [
-                    {
-                        $lookup: {
-                            'from': 'users',
-                            'localField': 'user_id',
-                            'foreignField': '_id',
-                            'as':'user'
-                        },
-                    },
-                ],
-            
-        }
-    },
-    {
-        $unwind:{
-            path: '$post'
-        }
-    },
-    {
-        $project:{
-            'post': 1
-        }
-    },
-])
+                {$match:{'follower_id':{$eq:req.user._id}}},
+
+                {
+                    $lookup:{
+                        'from': 'posts',
+                        'localField': 'following_id',
+                        'foreignField': 'user_id',
+                        as:'post',
+                        pipeline : [
+                            {
+                                $lookup: {
+                                    'from': 'users',
+                                    'localField': 'user_id',
+                                    'foreignField': '_id',
+                                    'as':'user'
+                                },
+                            },
+                        ],
+                    
+                }
+            },
+            {
+                $unwind:{
+                    path: '$post'
+                }
+            },
+            {
+                $project:{
+                    'post': 1
+                }
+            },
+        ]),
+        options
+    )
 
 return res.status(200).json(new apiResponse(200,'post list fetch successfully',getPost))
 
@@ -227,5 +233,37 @@ exports.save = asyncHandler(async(req,res)=>{
     }
 
     return res.status(201).json(new apiResponse(201,"Post saved successfuly",isSave))
+
+})
+
+exports.deletePost = asyncHandler(async(req,res)=>{
+
+    /** Get input */
+    const {post_id} = req.body
+
+    /** Input validation */
+    if(!post_id) throw new apiError(400,"Post id is required")
+
+    /* Check post in exist or not */
+    const isPostExist = await post.findById(post_id)
+    if(!isPostExist) throw new apiError(404,"Post not found")
+
+    /* Check authorization */  
+    if(isPostExist.user_id.toString() !== req.user._id.toString()){
+        throw new apiError(400,"You can not delete this post")
+    }
+
+    
+    /* remove */
+    await fs.unlink(isPostExist.post,(err)=>{
+        if(err){
+            console.log(err)
+            throw new apiError(400,"Something went wrong file not remove from folder")
+        }
+        console.log('file removed successfully')
+    })
+    await post.deleteOne({_id: post_id, user_id: req.user._id})
+
+    return res.status(200).json(new apiResponse(200,"Post deleted successfully"))
 
 })

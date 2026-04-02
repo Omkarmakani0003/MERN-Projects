@@ -1,4 +1,6 @@
 const mongoose = require('mongoose')
+const pagination = require('mongoose-paginate-v2')
+const aggregationPagination = require('mongoose-aggregate-paginate-v2')
 
 const postSchema = new mongoose.Schema({
 
@@ -37,5 +39,7 @@ const postSchema = new mongoose.Schema({
   timestamps: true 
 }
 )
+
+postSchema.plugin(aggregationPagination)
 
 module.exports.post = mongoose.model('posts',postSchema)

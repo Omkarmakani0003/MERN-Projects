@@ -61,3 +61,9 @@ exports.login = asyncHandler(async(req,res) => {
 
 })
 
+exports.logout = asyncHandler((req,res)=>{
+     res.clearCookie('token')
+     req.user = ''
+     return res.status(200).json(new apiResponse(200,'User logout successfully'))
+})
+
