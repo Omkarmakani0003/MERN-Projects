@@ -35,6 +35,8 @@ router.delete('/user/delete-post',postController.deletePost)
 router.post('/user/story_upload',post.single('story'),storiesController.uploadStory)
 router.get('/user/storylist',storiesController.storyList)
 router.delete('/user/delete-story',storiesController.deleteStory)
+router.post('/user/update-story-view',storiesController.updateStoryView)
+
 
 router.post('/auth/logout',authenticationController.logout)
 

@@ -26,7 +26,7 @@ exports.uploadPost = asyncHandler(async(req,res)=>{
         
         /* Store filename and filepath in variable */
         const filename = Date.now()+'-'+req.file.originalname;
-        const filepath = path.join(__dirname,'..', '/public/upload/posts/', filename);
+        const filepath = path.join('upload/posts/', filename);
 
         /* append data in object */
         data.filename = filename,
@@ -45,6 +45,10 @@ exports.uploadPost = asyncHandler(async(req,res)=>{
         post: data?.filepath,
         text: text
     })    
+
+    await user.findByIdAndUpdate(req.user._id,{
+        $inc: { post_count : -1 }
+    })
 
     return res.status(201).json(new apiResponse(201,'post uploaded successfully',uploaded_post))
    
@@ -72,6 +76,21 @@ exports.postList = asyncHandler(async(req,res)=>{
                                     'localField': 'user_id',
                                     'foreignField': '_id',
                                     'as':'user'
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    'from': 'likes',
+                                    'localField': 'user_id',
+                                    'foreignField': '_id',
+                                    'as':'likes'
+                                },
+                            },{
+                                $lookup: {
+                                    'from': 'comments',
+                                    'localField': 'user_id',
+                                    'foreignField': '_id',
+                                    'as':'comments'
                                 },
                             },
                         ],

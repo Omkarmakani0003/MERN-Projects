@@ -4,12 +4,13 @@ const storySchema = new mongoose.Schema({
 
     stories : [{
         story_url: { 
-            type: String, required: true 
+            type: String, 
+            required: true 
         },
         view: { 
-            type: Number, default: 0
+            type: Array, 
+            default: []
         },
-
     }],
 
     user_id : {

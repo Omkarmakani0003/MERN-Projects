@@ -1,8 +1,15 @@
 import { Home, MessageCircle, Bell, Search } from "lucide-react"
-  
+import { useSelector } from "react-redux"
+import DefaultUserImage from '../assets/UserProfile.png'
+import { Link, useNavigate } from "react-router-dom"
+
   function Header(){
+
+    const user = useSelector((state)=>state.auth.user)
+    const story = useSelector((state)=>state.story)
+
     return (
-      <nav className="navbar glass">
+      <nav className="navbar glass" style={{"display":story.display}}>
         <div className="navbar-inner">
         <h1 className="navbar-logo"><span className="brand-primary">Social</span><span className="brand-fg">Vibe</span></h1>
         <div className="navbar-search">
@@ -13,7 +20,7 @@ import { Home, MessageCircle, Bell, Search } from "lucide-react"
             <a href="index.html" className="nav-btn active"><Home size={24} /></a>
             <a href="messages.html" className="nav-btn"><MessageCircle size={24} /><span className="nav-badge">3</span></a>
             <a href="notifications.html" className="nav-btn"><Bell size={24} /><span className="nav-badge">5</span></a>
-            <a href="profile.html"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" alt="Profile" className="nav-avatar" /></a>
+            <Link to="profile"><img src={user.profile_picture ? `http://localhost:3000/${user?.profile_picture}` :  `http://localhost:5173${DefaultUserImage}`} alt="Profile" className="nav-avatar" /></Link>
         </div>
         <button className="mobile-toggle" id="mobileToggle"><i data-lucide="menu"></i></button>
         </div>

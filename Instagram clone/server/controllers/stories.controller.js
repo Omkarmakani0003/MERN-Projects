@@ -30,6 +30,7 @@ exports.uploadStory = asyncHandler(async (req, res) => {
         data.mimetype = upload.mimetype
         data.field = 'stories'
 
+
         /* Resize and upload in folder */
         await resizeUploads(data)
 
@@ -39,7 +40,7 @@ exports.uploadStory = asyncHandler(async (req, res) => {
 
     if (is_storyExist) {
 
-        is_storyExist.stories.push({ story_url: data?.filepath })
+        is_storyExist.stories.push({ story_url: `upload/stories/${data.filename}` })
         is_storyExist.save()
 
         return res.status(201).json(new apiResponse(201, 'story uploaded successfully', is_storyExist))
@@ -47,7 +48,7 @@ exports.uploadStory = asyncHandler(async (req, res) => {
     } else {
 
         const storyData = [
-                { story_url: data?.filepath }
+                { story_url: `upload/stories/${data.filename}` }
             ]
         
 
@@ -65,41 +66,97 @@ exports.uploadStory = asyncHandler(async (req, res) => {
 
 exports.storyList = asyncHandler(async(req,res)=>{
     
-    const getStory = await follow.aggregate([
+    // const getStory = await follow.aggregate([
     
-            {$match:{'follower_id':{$eq:req.user._id}}},
+    //         {$match:{'follower_id':{$eq:req.user._id}}},
     
-            {
-                $lookup:{
-                    'from': 'stories',
-                    'localField': 'following_id',
-                    'foreignField': 'user_id',
-                    as:'story',
-                    pipeline : [
-                        {
-                            $lookup: {
-                                'from': 'users',
-                                'localField': 'user_id',
-                                'foreignField': '_id',
-                                'as':'user'
-                            },
-                        },
-                    ],
+    //         {
+    //             $lookup:{
+    //                 'from': 'stories',
+    //                 'localField': 'following_id',
+    //                 'foreignField': 'user_id',
+    //                 as:'story',
+    //                 pipeline : [
+    //                     {
+    //                         $lookup: {
+    //                             'from': 'users',
+    //                             'localField': 'user_id',
+    //                             'foreignField': '_id',
+    //                             'as':'user'
+    //                         },
+    //                     },
+    //                 ],
                 
-            }
-        },
-        {
-            $project: {
-                story : 1
-            }
-        },
-        {
-            $unwind:{
-                path: '$story'
-            }
-        },
+    //         }
+    //     },
+    //     {
+    //         $project: {
+    //             story : 1
+    //         }
+    //     },
+    //     {
+    //         $unwind:{
+    //             path: '$story'
+    //         }
+    //     },
+    //     { $replaceRoot: { newRoot: "$story" } }
 
-    ])
+    // ])
+
+    // const myStories = await stories.find({user_id:req.user._id})
+
+    // const allStories = [...myStories, ...getStory];
+
+    const getStory = await follow.aggregate([
+    {
+        $match: { follower_id: req.user._id }
+    },
+    {
+        $group: {
+            _id: null,
+            followingIds: { $addToSet: "$following_id" }
+        }
+    },
+    {
+        $addFields: {
+            allUserIds: {
+                $concatArrays: ["$followingIds", [req.user._id]] // 👈 include self
+            }
+        }
+    },
+    {
+        $lookup: {
+            from: "stories",
+            localField: "allUserIds",
+            foreignField: "user_id",
+            as: "stories",
+            pipeline: [
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "user_id",
+                        foreignField: "_id",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                }
+            ]
+        }
+    },
+    {
+        $unwind: "$stories"
+    },
+    {
+        $replaceRoot: { newRoot: "$stories" }
+    },
+    {
+        $sort: { createdAt: -1 } // optional but recommended
+    }
+]);
+
+console.log(getStory)
 
     return res.status(200).json(new apiResponse(200,'stories list fetch successfully',getStory))
 
@@ -148,4 +205,21 @@ exports.deleteStory = asyncHandler(async(req,res)=>{
 
     return res.status(200).json(new apiResponse(200,"Story deleted successfully"))
 
+})
+
+exports.updateStoryView = asyncHandler(async(req,res)=>{
+      const {stories_id,specific_story_id} = req.body
+      
+      if(!stories_id || !specific_story_id) throw new apiError(400,"stories_id and specific_story_id must required")
+
+      const Stories = await stories.findOne({_id : stories_id})
+
+      const specific_story = Stories.stories.map((e)=>{ 
+        if(e._id == specific_story_id){
+            return e.view.push(req.user._id)
+        }else{
+            return e
+        }
+      })
+      console.log(specific_story)
 })

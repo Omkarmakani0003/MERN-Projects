@@ -56,6 +56,15 @@ exports.follow = asyncHandler(async(req,res)=>{
 
     if(is_followed && is_followed.length > 0){
         await follow.deleteOne({$and:[{follower_id:req.user._id},{following_id:user_id}]})
+
+        await user.findByIdAndUpdate(req.user._id,{
+          $inc: { following : -1 }
+        })
+
+        await user.findByIdAndUpdate(user_id,{
+          $inc: { follower : -1 }
+        })
+
         return res.status(200).json(new apiResponse(201,'unfollowed successfully'))
     }
 
@@ -63,6 +72,15 @@ exports.follow = asyncHandler(async(req,res)=>{
         follower_id : req.user._id,
         following_id : user_id
     }) 
+
+    await user.findByIdAndUpdate(req.user._id,{
+         $inc: { following : 1 }
+    })
+
+    await user.findByIdAndUpdate(user_id,{
+         $inc: { follower : 1 }
+    })
+
 
     return res.status(200).json(new apiResponse(201,'followed successfully'))
 
@@ -123,12 +141,13 @@ exports.updateProfile = asyncHandler(async(req,res)=>{
 exports.getSpecificUsersPost = asyncHandler(async(req,res)=>{
 
       const {user_id} = req.body
+
       if(!user_id) throw new apiError(400,"user_ID is must required")
 
       const options = {page : parseInt(req.query?.page) || 1, limit: 9}
 
-      const posts = await post.aggregatePaginate(post.aggregate({$match:{user_id: user_id}}),options)  
-      
+      const posts = await post.aggregatePaginate(post.aggregate({$match: {user_id:{$eq: user_id} } }),options)  
+      console.log(posts)
       return res.status(200).json(new apiResponse(200,"post fetched successfully",posts))
 
 })
