@@ -1,11 +1,14 @@
 import { useState } from "react"
 import { toast } from "react-toastify"
 import Axios from "../axios/Axios";
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
+import {UploadStoryThunk,GetStoryThunk} from '../features/storySlice'
 
-function StoryUploader({StoryUploadHandler, setStory}){
+function StoryUploader({StoryUploadHandler}){
 
     const user = useSelector((state)=>state.auth.user)
+    const dispatch = useDispatch()
+    
     const [file,setFile] = useState(null)
     const [preview,setPreview] = useState(null)
 
@@ -29,18 +32,12 @@ function StoryUploader({StoryUploadHandler, setStory}){
         formData.append("story", file);
 
         try{
-
-            const response = await Axios.post('/user/story_upload',formData,{
-             headers: {
-                'Content-Type': 'multipart/form-data'
-              }
-            })
-   
-            if(response.data.success){
-
-                //setStory((prev)=>{ prev.user_id == user._id ? stories=response.data.stories : [...prev,response.data.data] })
+            const response = await dispatch(UploadStoryThunk(formData))
+            console.log(response)
+            if(response.payload.success){
                 StoryUploadHandler()
-                toast.success(response.data.message)
+                dispatch(GetStoryThunk())
+                toast.success(response.payload.message)
             }
 
         }catch(error){

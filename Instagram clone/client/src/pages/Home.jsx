@@ -10,16 +10,30 @@ import Story from '../components/Story'
 import Suggetion from '../components/Suggetion'
 import StoryViewer from '../components/StoryViewer';
 import StoryUploader from "../components/StoryUploader";
+import {GetStoryThunk} from '../features/storySlice'
 import { View } from '../features/storySlice';
 
 function Home(){
 
+    const dispatch = useDispatch()
     const user = useSelector((state)=>state.auth.user)
+    const story = useSelector((state)=>state.story.story)
+    
     const [postList,setPostList] = useState([])
     const [suggested, setSuggested] = useState([])
-    const [story,setStory] = useState([])
+    ////const [story,setStory] = useState([])
     const [isStoryUploaderOpen,setIsStoryUploaderOpen] = useState(false)
-  
+    
+    
+  const GetStories = async()=>{
+      dispatch(GetStoryThunk())
+  }
+
+  useEffect(()=>{
+      GetPost(),
+      GetSuggetion()
+      GetStories()
+  },[setIsStoryUploaderOpen])
 
     const isOwnerStory = story.some((s)=>(
         s.user_id == user._id
@@ -39,10 +53,6 @@ function Home(){
     }
 
 
-    const view = useSelector((state)=>state.story)
-
-    const dispatch = useDispatch()
-
     const GetPost = async()=>{
         const response = await Axios.get('/user/postlist')
         if(response.data.success){
@@ -54,27 +64,10 @@ function Home(){
         const response = await Axios.get('/user/suggested')
         if(response.data.success){
            setSuggested(response.data.data)
-        }
+        } 
     }
 
-    const GetStories = async()=>{
-        const response = await Axios.get('/user/storylist')
-        if(response.data.success){
-           setStory(response.data.data)
-        }
-    }
-
-
-    useEffect(()=>{
-      
-        GetPost(),
-        GetSuggetion(),
-        GetStories()
-
-    },[setIsStoryUploaderOpen,setStory])
-
-
-  
+    
     const [isActiveStory, setActiveStory] = useState([])
     const [isActiveIndex,setActiveIndex] = useState(0)
     const [StoryIndex,setStoryIndex] = useState(0)
@@ -178,7 +171,7 @@ function Home(){
       
     <div className="feed">
       {
-       isStoryUploaderOpen ? <StoryUploader StoryUploadHandler={StoryUploadHandler} setStory={setStory}/> : ``
+       isStoryUploaderOpen ? <StoryUploader StoryUploadHandler={StoryUploadHandler} /> : ``
       }
     <div className="stories-bar">
       <Swiper

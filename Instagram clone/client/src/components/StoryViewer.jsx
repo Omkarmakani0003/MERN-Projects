@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, Trash2, Send, X } from "lucide-react"
 import DefaultUserImage from '../assets/UserProfile.png'
 import { useSelector,useDispatch } from "react-redux"
-import { View } from '../features/storySlice';
+import { DeleteStoryThunk, GetStoryThunk, View } from '../features/storySlice';
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify"
 import Axios from "../axios/Axios";
@@ -9,7 +9,7 @@ import Axios from "../axios/Axios";
 function StoryViewer({story,next,prev,index,onClose}){
 
   // console.log(story)
-
+    const dispatch = useDispatch()
     const view = useSelector((state)=>state.story)
     const user = useSelector((state)=>state.auth.user)
     const [progress,setProgress] = useState(0)
@@ -30,14 +30,11 @@ function StoryViewer({story,next,prev,index,onClose}){
      }
 
      try{
-        const response = await Axios.delete('/user/delete-story',{data},{
-             headers: {
-                'Content-Type': 'application/json'
-              }
-        })
-        toast.success(response.data.message)
+        const response = await dispatch(DeleteStoryThunk(data))
+        console.log(response)
+        dispatch(GetStoryThunk())
+        toast.success(response.payload.message)
         onClose()
-
      }catch(error){
        toast.error(error.message)
      }
