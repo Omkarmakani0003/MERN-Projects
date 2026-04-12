@@ -3,6 +3,8 @@ import DefaultUserImage from '../assets/UserProfile.png'
 import { useSelector,useDispatch } from "react-redux"
 import { View } from '../features/storySlice';
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify"
+import Axios from "../axios/Axios";
 
 function StoryViewer({story,next,prev,index,onClose}){
 
@@ -11,6 +13,36 @@ function StoryViewer({story,next,prev,index,onClose}){
     const view = useSelector((state)=>state.story)
     const user = useSelector((state)=>state.auth.user)
     const [progress,setProgress] = useState(0)
+
+
+    const deleteStoryhandler = async()=>{
+      const stories_id = story._id
+      const story_id= story.stories[index]._id
+
+     if(!stories_id || !story_id){
+        toast.error('Something went wrong')
+        return false
+     }
+
+     const data = {
+        stories_id,
+        story_id
+     }
+
+     try{
+        const response = await Axios.delete('/user/delete-story',{data},{
+             headers: {
+                'Content-Type': 'application/json'
+              }
+        })
+        toast.success(response.data.message)
+        onClose()
+
+     }catch(error){
+       toast.error(error.message)
+     }
+
+  }
 
 
    let content = ''
@@ -84,14 +116,14 @@ function StoryViewer({story,next,prev,index,onClose}){
                     <button className="story-viewer-close" id="storyClose" onClick={()=>{onClose()}}><X /></button>
                     </div>
                 </div>
-                <div className="story-nav-left" id="storyNavLeft"></div>
-                <div className="story-nav-right" id="storyNavRight"></div>
+                <div className="story-nav-left" id="storyNavLeft" onClick={()=> document.getElementById('storyArrowPrev').click()} ></div>
+                <div className="story-nav-right" id="storyNavRight" onClick={()=> document.getElementById('storyArrowNext').click()}></div>
 
                 {content}
             
                 <div className="story-reply-bar">
                     {
-                        story?.user?.fullname == user._id ? <button className="story-delete-btn" id="storyDeleteBtn" title="Delete Story"><Trash2 /></button> : ''
+                        story?.user_id == user._id ? <button className="story-delete-btn" id="storyDeleteBtn" title="Delete Story" onClick={()=>{deleteStoryhandler()}}><Trash2 /></button> : ''
                     }
                     {/* <input className="story-reply-input" placeholder="Send a reply..." />
                     <button className="story-reply-send"><Send /></button> */}

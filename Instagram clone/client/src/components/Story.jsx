@@ -4,7 +4,7 @@ import StoryViewer from './StoryViewer';
 import { useDispatch, useSelector } from "react-redux"
 import { View } from '../features/storySlice';
 
-function Story({data,onOpen,indexOfStories}){
+function Story({data,onOpen,indexOfStories,StoryUploadHandler}){
     
     const user = useSelector((state)=>state.auth.user)
     
@@ -27,7 +27,7 @@ function Story({data,onOpen,indexOfStories}){
             <span className="story-name truncate">{data?.user?.fullname}</span>
         </button>
         {
-            data.user._id == user._id ? <button className="story-add-icon" >+</button> : ''
+            data.user._id == user._id ? <button className="story-add-icon" onClick={()=>{StoryUploadHandler()}}>+</button> : ''
         }
     </>
     )

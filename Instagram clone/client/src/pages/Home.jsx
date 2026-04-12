@@ -2,7 +2,6 @@ import { Settings, Camera, Image, Video, Smile, MapPin, UserPlus,User} from "luc
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import { useDispatch,useSelector } from "react-redux"
-import {GetUserProfileThunk} from "../features/authSlice"
 import { useEffect, useState } from "react";
 import DefaultUserImage from '../assets/UserProfile.png'
 import Axios from "../axios/Axios";
@@ -10,6 +9,7 @@ import Post from '../components/Post'
 import Story from '../components/Story'
 import Suggetion from '../components/Suggetion'
 import StoryViewer from '../components/StoryViewer';
+import StoryUploader from "../components/StoryUploader";
 import { View } from '../features/storySlice';
 
 function Home(){
@@ -18,6 +18,7 @@ function Home(){
     const [postList,setPostList] = useState([])
     const [suggested, setSuggested] = useState([])
     const [story,setStory] = useState([])
+    const [isStoryUploaderOpen,setIsStoryUploaderOpen] = useState(false)
   
 
     const isOwnerStory = story.some((s)=>(
@@ -37,7 +38,6 @@ function Home(){
         OrderedStories.unshift({user})
     }
 
-  
 
     const view = useSelector((state)=>state.story)
 
@@ -71,7 +71,7 @@ function Home(){
         GetSuggetion(),
         GetStories()
 
-    },[])
+    },[setIsStoryUploaderOpen,setStory])
 
 
   
@@ -110,34 +110,40 @@ function Home(){
     }
 
   const prevStory = ()=>{
-    
-     if(StoryIndex > 0){
+
         if(isActiveIndex > 0){
           setActiveIndex((prev)=>{ return prev  - 1 })
-       }else{
-         
-          if(StoryIndex >= 0){
-            setStoryIndex((prev)=>{ 
-               const newIndex = prev - 1
+        }else{
+              
+                if(StoryIndex > 0){
+                  setStoryIndex((prev)=>{ 
+                    const newIndex = prev - 1
 
-               if(OrderedStories[newIndex].stories == undefined){
+                    if(OrderedStories[newIndex].stories == undefined){
+                        CloseHandler()
+                    }
+
+                    setActiveStory(OrderedStories[newIndex])
+                    setActiveIndex(0)
+                    return newIndex
+                  })
+                }else{
                   CloseHandler()
-               }
-
-               setActiveStory(OrderedStories[newIndex])
-               setActiveIndex(0)
-               return newIndex
-            })
-          }
-       }
-     }  
+                }
+                
+          }  
   }
-  
- 
+
+  const StoryUploadHandler = ()=>{
+      setIsStoryUploaderOpen(!isStoryUploaderOpen)
+  }
+
   const CloseHandler = ()=>{
         dispatch(View({'story_opacity': 0, 'display': 'block', 'eventPointer' : 'none'}))
         setActiveStory([])
   }
+
+  
 
     return (
       
@@ -170,8 +176,10 @@ function Home(){
         </aside>
       </div>
       
-      <div className="feed">
-      
+    <div className="feed">
+      {
+       isStoryUploaderOpen ? <StoryUploader StoryUploadHandler={StoryUploadHandler} setStory={setStory}/> : ``
+      }
     <div className="stories-bar">
       <Swiper
         spaceBetween={10}
@@ -182,11 +190,11 @@ function Home(){
           {
             OrderedStories?.map((item,index)=>(
               <SwiperSlide>
-                <Story key={item._id} data={item} indexOfStories={index}  onOpen={onOpen} />
+                <Story key={item._id} data={item} indexOfStories={index}  onOpen={onOpen} StoryUploadHandler={StoryUploadHandler} />
               </SwiperSlide>
             ))
           }
-<StoryViewer story={isActiveStory} index={isActiveIndex} next={nextStory} prev={prevStory} onClose={CloseHandler} />
+  <StoryViewer story={isActiveStory} index={isActiveIndex} next={nextStory} prev={prevStory} onClose={CloseHandler} />
 </Swiper>
     </div> 
         <div className="create-post">

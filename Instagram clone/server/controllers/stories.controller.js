@@ -156,8 +156,6 @@ exports.storyList = asyncHandler(async(req,res)=>{
     }
 ]);
 
-console.log(getStory)
-
     return res.status(200).json(new apiResponse(200,'stories list fetch successfully',getStory))
 
 })
@@ -185,7 +183,8 @@ exports.deleteStory = asyncHandler(async(req,res)=>{
     if(!getStory || getStory.length == 0) throw new apiError(404,"Story not found")
 
     /* remove */
-    await fs.unlink(getStory[0].story_url,(err)=>{
+
+    await fs.unlink(path.join(__dirname,'..','public',getStory[0].story_url),(err)=>{
             if(err){
                 console.log(err)
                 throw new apiError(400,"Something went wrong file not remove from folder")
