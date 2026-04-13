@@ -12,6 +12,9 @@ import StoryViewer from '../components/StoryViewer';
 import StoryUploader from "../components/StoryUploader";
 import {GetStoryThunk} from '../features/storySlice'
 import { View } from '../features/storySlice';
+import EmojiPicker from 'emoji-picker-react';
+import { toast } from "react-toastify";
+import axios from "axios";
 
 function Home(){
 
@@ -21,7 +24,7 @@ function Home(){
     
     const [postList,setPostList] = useState([])
     const [suggested, setSuggested] = useState([])
-    ////const [story,setStory] = useState([])
+
     const [isStoryUploaderOpen,setIsStoryUploaderOpen] = useState(false)
     
     
@@ -136,12 +139,50 @@ function Home(){
         setActiveStory([])
   }
 
-  
+  const [file,setFile] = useState(null)
+  const [text,setText] = useState(null)
+  const [preview,setPreview] = useState(null)
 
-    return (
+  const PostUploadPreviewHandler = (e)=>{
+      const file = e.target.files[0]
+      if(file){
+        setFile(file)
+        setPreview(URL.createObjectURL(file))
+      }
+  } 
+
+  const PostUploadHandler = async()=>{
+
+    if(!file && !text){
+      toast.error('image/video or text required')
+    }
+
+    const formData = new FormData();
+    formData.append("post", file);
+
+    try{
+      const response = await Axios.post('/user/post_upload', formData,{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+      })
+
+      if(response.data.success){
+        setFile(null)
+        setText(null)
+        setPreview(null)
+        toast.success(response.data.message)
+      }
+
+    }catch(error){
+       return toast.error(error.response?.data || error.message)
+    }
+
+  }
+
+  return (
       
     <div className="main-container">
-
     <div className="layout-grid">
       
       <div className="sidebar-left">
@@ -195,14 +236,20 @@ function Home(){
 
             <img src={user?.profile_picture ? `http://localhost:3000/${user.profile_picture}` : `http://localhost:5173${DefaultUserImage}`} alt="You" className="create-post-avatar" />
             <div className="create-post-body">
-              <textarea placeholder="What's on your mind?" rows="2"></textarea>
+              <textarea placeholder="What's on your mind?" rows="2" onChange={(e)=>{ setText(e.target.value) }}>{text}</textarea>
               <div className="create-post-actions">
                 <div className="create-post-icons">
-                  <button className="icon-primary"><Image /></button>
-                  <button className="icon-accent"><Video /></button>
+                  <button className="icon-primary" onClick={()=> document.getElementById('UploadPost').click()}><Image /></button>
+                  <button className="icon-accent" onClick={()=> document.getElementById('UploadPost').click()}><Video /></button>
                 </div>
-                <button className="btn-post">Post</button>
+                <input type="file" id="UploadPost" style={{'display':'none'}} onChange={PostUploadPreviewHandler}/>
+                <div>
+                  <button className="btn-cancel" style={{'marginRight':'20px'}} onClick={()=>{ setFile(null),setPreview(null) }}>Cancel</button>
+                  <button className="btn-post" onClick={PostUploadHandler} >Post</button>
+                </div>
               </div>
+              {preview ? (<img alt="Post" className="post-image" loading="lazy" src={preview}></img>):('') }
+              
             </div>
           </div>
         </div>
@@ -226,7 +273,7 @@ function Home(){
         
         {
           suggested.map((item,index)=>(
-            <Suggetion key={index} users={item}/>
+            <Suggetion key={index} users={item} />
           ))
         }
          

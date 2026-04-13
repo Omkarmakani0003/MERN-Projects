@@ -4,8 +4,10 @@ import StorySlice from "../features/storySlice"
 
 export const store = configureStore({
     reducer : {
-        auth:authSlice,
-        story:StorySlice
+        auth: authSlice,
+        story: StorySlice
+        // follow: 
+
     }
 })
 

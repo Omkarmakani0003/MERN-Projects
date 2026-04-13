@@ -62,7 +62,7 @@ const userSchema = new mongoose.Schema({
     },
 
     post_count : {
-        type : String,
+        type : Number,
         default : 0
     },
 

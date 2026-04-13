@@ -7,6 +7,7 @@ const {likes} = require('../models/likes.model')
 const {save} = require('../models/save.model')
 const {comments} = require('../models/comments.model')
 const {resizeUploads} = require('../middlewares/resizeUploads')
+const {user} = require('../models/user.model')
 const path = require('path')
 const fs  = require('fs')
 
@@ -44,11 +45,13 @@ exports.uploadPost = asyncHandler(async(req,res)=>{
         user_id: req.user._id,
         post: data?.filepath,
         text: text
-    })    
+    })   
 
     await user.findByIdAndUpdate(req.user._id,{
-        $inc: { post_count : -1 }
+        $inc: { post_count : 1 }
     })
+
+
 
     return res.status(201).json(new apiResponse(201,'post uploaded successfully',uploaded_post))
    

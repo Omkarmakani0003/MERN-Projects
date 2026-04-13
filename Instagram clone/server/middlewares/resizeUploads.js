@@ -14,17 +14,17 @@ exports.resizeUploads = async(data)=>{
     if(!filetype) throw new apiError(400,'something went wrong cant uploaded post')
 
     if(filetype == 'image'){
-
+    
         if(data.field == 'stories'){
             await sharp(data.buffer)
               .resize(1080,1920)
               .jpeg({quality:80})
-              .toFile(data.filepath)
+              .toFile(path.join(__dirname,'..','public',data.filepath))
         }else{
             await sharp(data.buffer)
               .resize(1080,1350)
               .jpeg({quality:80})
-              .toFile(data.filepath)
+              .toFile(path.join(__dirname,'..','public',data.filepath))
         }
         
     }else if(filetype == 'video'){
