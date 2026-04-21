@@ -1,9 +1,40 @@
 import DefaultUserImage from '../assets/UserProfile.png'
 import { useDispatch, useSelector } from "react-redux"
+import { toast } from "react-toastify";
+import Axios from "../axios/Axios";
 
 function Post({post}){
-  const user = useSelector((state)=>state.auth.user)
   // console.log(post)
+  const user = useSelector((state)=>state.auth.user)
+
+  const likeDislikeHandler = async()=>{
+     const post_id = post._id
+     const auther_id = post.user[0]._id
+     
+     if(!post_id || !auther_id){
+        return toast.error('post_id and auther_id are require')
+     }
+
+     try{
+
+        const response = await Axios.post('/user/like', {post_id,auther_id},{
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+    console.log(response)
+        if(response.data.success){
+             
+          //return toast.success(response.data.message)
+        }
+
+     }catch(error){
+        return toast.error(error.response?.message || error.message) 
+     }
+
+  }
+
+
   let content = ''
    if(post.post){
        const url = post.post.split('.').pop()
@@ -27,11 +58,11 @@ function Post({post}){
                 <div className="post-header">
                   <div className="post-user">
                     <div className="post-user-avatar-wrap">
-                      <img src={post.user[0].profile_picture ? `http://localhost:3000/${post.user[0].profile_picture}` : DefaultUserImage} alt="Maya Chen" className="post-user-avatar" />
+                      <img src={post.user?.[0]?.profile_picture ? `http://localhost:3000/${post.user?.[0]?.profile_picture}` : DefaultUserImage} alt="Maya Chen" className="post-user-avatar" />
                       <div className="online-dot"></div>
                     </div>
                     <div>
-                      <h3 className="post-user-name">{post.user[0].username }</h3>
+                      <h3 className="post-user-name">{post.user?.[0]?.username }</h3>
                       <p className="post-user-time">2h ago</p>
                     </div>
                   </div>
@@ -41,7 +72,7 @@ function Post({post}){
                 {content}
                 <div className="post-actions">
                   <div className="post-actions-left">
-                    <button className={"action-btn like-btn" + (post.likes.user_id == user._id ? 'liked' : '')}>
+                    <button className={"action-btn like-btn" + (post.likes.user_id == user._id ? 'liked' : '')} onClick={likeDislikeHandler}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" data-lucide="heart" aria-hidden="true" className="lucide lucide-heart"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path></svg>
                       <span className="like-count">{post.likes_count}</span>
                     </button>

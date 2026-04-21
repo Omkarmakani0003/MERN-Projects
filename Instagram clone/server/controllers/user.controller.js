@@ -48,6 +48,7 @@ exports.getSuggestedUsers = asyncHandler(async(req,res)=>{
 })
 
 exports.follow = asyncHandler(async(req,res)=>{
+
     const {user_id} = req.body
 
     if(user_id == req.user._id) throw new apiError(400,'you can not follow yourself')
@@ -62,9 +63,9 @@ exports.follow = asyncHandler(async(req,res)=>{
         })
 
         await user.findByIdAndUpdate(user_id,{
-          $inc: { follower : -1 }
+          $inc: { followes : -1 }
         })
-
+  
         return res.status(200).json(new apiResponse(201,'unfollowed successfully'))
     }
 
@@ -78,7 +79,7 @@ exports.follow = asyncHandler(async(req,res)=>{
     })
 
     await user.findByIdAndUpdate(user_id,{
-         $inc: { follower : 1 }
+         $inc: { followes : 1 }
     })
 
 

@@ -272,8 +272,8 @@ function Home(){
           <div className="suggested-list" id="suggestedList">
         
         {
-          suggested.map((item,index)=>(
-            <Suggetion key={index} users={item} />
+          suggested.map((item)=>(
+            <Suggetion key={item._id} users={item} />
           ))
         }
          

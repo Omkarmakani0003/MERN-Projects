@@ -1,9 +1,10 @@
 import DefaultUserImage from '../assets/UserProfile.png'
 import { toast } from "react-toastify";
 import Axios from "../axios/Axios";
+import { useState } from 'react';
 
 function Suggetion({users,follow}){
-  
+  const [action,setAction] = useState(false)
   const followHandler = async()=>{
      const user_id = users._id
 
@@ -20,7 +21,8 @@ function Suggetion({users,follow}){
         })
 
         if(response.data.success){
-          return toast.success(response.data.message)
+          setAction(!action)    
+          //return toast.success(response.data.message)
         }
 
      }catch(error){
@@ -38,7 +40,7 @@ function Suggetion({users,follow}){
               <p className="suggested-user-handle">@{users.username}</p>
             </div>
           </div>
-          <button className="btn-follow" onClick={followHandler}>Follow</button>
+          <button className="btn-follow" onClick={followHandler}>{ action ? 'Unfollow' : 'Follow' }</button>
         </div>
     )
 }

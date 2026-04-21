@@ -1,9 +1,10 @@
 import { useDispatch,useSelector } from "react-redux"
+import { Calendar} from "lucide-react"
 
 function Profile(){
 
     const user = useSelector((state)=>state.auth.user)
-    console.log(user)
+    
     return (
         <div className="profile-page-container">
 
@@ -11,7 +12,6 @@ function Profile(){
     <div className="profile-cover">
       <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=400&fit=crop" alt="Cover photo" className="cover-img" />
       <div className="cover-overlay"></div>
-      <button className="cover-edit-btn"><i data-lucide="camera"></i> Edit Cover</button>
     </div>
 
     
@@ -28,15 +28,12 @@ function Profile(){
             <p className="profile-page-bio">{user?.bio}</p>
             <div className="profile-meta">
               {/* <span><i data-lucide="map-pin"></i> San Francisco, CA</span> */}
-              <span><i data-lucide="calendar"></i> Joined March 2023</span>
+              <span><Calendar /> Joined March 2023</span>
             </div>
           </div>
         </div>
         <div className="profile-header-actions">
-          
           <a href="edit-profile.html" className="btn-edit-profile"><i data-lucide="edit-3"></i> Edit Profile</a>
-          <button className="btn-icon-outline"><i data-lucide="share-2"></i></button>
-          <button className="btn-icon-outline"><i data-lucide="more-horizontal"></i></button>
         </div>
       </div>
 

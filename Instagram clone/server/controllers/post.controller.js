@@ -84,15 +84,15 @@ exports.postList = asyncHandler(async(req,res)=>{
                             {
                                 $lookup: {
                                     'from': 'likes',
-                                    'localField': 'user_id',
-                                    'foreignField': '_id',
+                                    'localField': '_id',
+                                    'foreignField': 'post_id',
                                     'as':'likes'
                                 },
                             },{
                                 $lookup: {
                                     'from': 'comments',
-                                    'localField': 'user_id',
-                                    'foreignField': '_id',
+                                    'localField': '_id',
+                                    'foreignField': 'post_id',
                                     'as':'comments'
                                 },
                             },
@@ -128,7 +128,7 @@ exports.like = asyncHandler(async(req,res)=>{
     }
 
     /* Check post Exist or not */
-    let isPostExist = await post.findOne({post_id})
+    let isPostExist = await post.findOne({_id:post_id})
     if(!isPostExist) throw new apiError(404,"Post not found")
 
     /* Check post already liked or not */
