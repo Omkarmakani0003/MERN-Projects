@@ -12,9 +12,7 @@ import StoryViewer from '../components/StoryViewer';
 import StoryUploader from "../components/StoryUploader";
 import {GetStoryThunk} from '../features/storySlice'
 import { View } from '../features/storySlice';
-import EmojiPicker from 'emoji-picker-react';
 import { toast } from "react-toastify";
-import axios from "axios";
 
 function Home(){
 

@@ -5,7 +5,7 @@ import Loader from "../components/loader";
 function Protected(){
 
     const {isLoading,isAuthenticated} = useSelector((state)=>state.auth)
-
+   
     if(isLoading){
         return (
             <>

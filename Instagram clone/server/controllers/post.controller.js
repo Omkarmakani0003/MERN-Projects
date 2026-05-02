@@ -132,11 +132,12 @@ exports.like = asyncHandler(async(req,res)=>{
     if(!isPostExist) throw new apiError(404,"Post not found")
 
     /* Check post already liked or not */
-    let islikeExist = await likes.findOne({post_id},{user_id:req.user._id}) 
-    
+    let islikeExist = await likes.findOne({$and:[
+        {post_id: post_id},{user_id: req.user._id}
+    ]}) 
+ 
     /* Defind variable to check like and dislike */
     let isLiked
-
     if(!islikeExist){
         /* Save like if it not exist */
         await likes.create({

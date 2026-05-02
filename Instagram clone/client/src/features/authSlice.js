@@ -80,6 +80,7 @@ const authSlice = createSlice({
         .addCase(GetUserProfileThunk.rejected,(state,action)=>{
             state.isLoading = false
             state.error = action.error.message
+            state.isAuthenticated = false
         })
     }
 })

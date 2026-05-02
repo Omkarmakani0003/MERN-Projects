@@ -16,9 +16,11 @@ import { useEffect } from "react";
 function App() {
 
   const dispatch = useDispatch()
-
+  const {isAuthenticated, isLoading} = useSelector((state)=>state.auth)
   useEffect(()=>{
-      dispatch(GetUserProfileThunk())
+    // if(isAuthenticated || isLoading){
+       dispatch(GetUserProfileThunk())
+    // }
   },[dispatch])
 
   return (
